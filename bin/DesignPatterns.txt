@@ -1,0 +1,1136 @@
+DesignPatterns
+
+Design Patterns are very popular among software developers. A design pattern is a well described solution to a common software problem.
+Design Patterns are already defined and provides industry standard approach to solve a recurring problem, so it saves time if we sensibly use the design pattern. There are many java design patterns that we can use in our java based projects.
+Using design patterns promotes reusability that leads to more robust and highly maintainable code. It helps in reducing total cost of ownership (TCO) of the software product.
+Since design patterns are already defined, it makes our code easy to understand and debug. It leads to faster development and new members of team understand it easily.
+
+Java Design Patterns are divided into three categories – creational, structural, and behavioral design patterns.
+1. Creational Design Patterns
+Singleton Pattern
+Factory Pattern
+Abstract Factory Pattern
+Builder Pattern
+Prototype Pattern
+
+2. Structural Design Patterns
+Adapter Pattern
+Composite Pattern
+Proxy Pattern
+Flyweight Pattern
+Facade Pattern
+Bridge Pattern
+Decorator Pattern
+
+3. Behavioral Design Patterns
+Template Method Pattern
+Mediator Pattern
+Chain of Responsibility Pattern
+Observer Pattern
+Strategy Pattern
+Command Pattern
+State Pattern
+Visitor Pattern
+Interpreter Pattern
+Iterator Pattern
+Memento Pattern
+
+Creational Design Patterns
+Creational design patterns provide solution to instantiate a object in the best possible way for specific situations.
+
+Singleton Pattern
+Singleton pattern restricts the instantiation of a class and ensures that only one instance of the class exists in the java virtual machine. It seems to be a very simple design pattern but when it comes to implementation, it comes with a lot of implementation concerns. The implementation of Singleton pattern has always been a controversial topic among developers. Check out Singleton Design Pattern to learn about different ways to implement Singleton pattern and pros and cons of each of the method. This is one of the most discussed java design patterns.
+Java Singleton Pattern is one of the Gangs of Four Design patterns and comes in the Creational Design Pattern category. From the definition, it seems to be a very simple design pattern but when it comes to implementation, it comes with a lot of implementation concerns. The implementation of Java Singleton pattern has always been a controversial topic among developers. Here we will learn about Singleton design pattern principles, different ways to implement the Singleton design pattern and some of the best practices for its usage.
+
+Java Singleton
+Singleton pattern restricts the instantiation of a class and ensures that only one instance of the class exists in the java virtual machine.
+The singleton class must provide a global access point to get the instance of the class.
+Singleton pattern is used for logging, drivers objects, caching and thread pool.
+Singleton design pattern is also used in other design patterns like Abstract Factory, Builder, Prototype, Facade etc.
+Singleton design pattern is used in core java classes also, for example java.lang.Runtime, java.awt.Desktop.
+
+Java Singleton Pattern
+To implement a Singleton pattern, we have different approaches but all of them have the following common concepts.
+
+Private constructor to restrict instantiation of the class from other classes.
+Private static variable of the same class that is the only instance of the class.
+Public static method that returns the instance of the class, this is the global access point for outer world to get the instance of the singleton class.
+In further sections, we will learn different approaches of Singleton pattern implementation and design concerns with the implementation.
+
+Eager initialization
+Static block initialization
+Lazy Initialization
+Thread Safe Singleton
+Bill Pugh Singleton Implementation
+Using Reflection to destroy Singleton Pattern
+Enum Singleton
+Serialization and Singleton
+
+Eager initialization
+In eager initialization, the instance of Singleton Class is created at the time of class loading, this is the easiest method to create a singleton class but it has a drawback that instance is created even though client application might not be using it.
+
+Here is the implementation of the static initialization singleton class.
+
+package com.journaldev.singleton;
+
+public class EagerInitializedSingleton {
+    
+    private static final EagerInitializedSingleton instance = new EagerInitializedSingleton();
+    
+    //private constructor to avoid client applications to use constructor
+    private EagerInitializedSingleton(){}
+
+    public static EagerInitializedSingleton getInstance(){
+        return instance;
+    }
+}
+If your singleton class is not using a lot of resources, this is the approach to use. But in most of the scenarios, Singleton classes are created for resources such as File System, Database connections etc. We should avoid the instantiation until unless client calls the getInstance method. Also, this method doesn’t provide any options for exception handling.
+
+Static block initialization
+Static block initialization implementation is similar to eager initialization, except that instance of class is created in the static block that provides option for exception handling.
+
+package com.journaldev.singleton;
+
+public class StaticBlockSingleton {
+
+    private static StaticBlockSingleton instance;
+    
+    private StaticBlockSingleton(){}
+    
+    //static block initialization for exception handling
+    static{
+        try{
+            instance = new StaticBlockSingleton();
+        }catch(Exception e){
+            throw new RuntimeException("Exception occured in creating singleton instance");
+        }
+    }
+    
+    public static StaticBlockSingleton getInstance(){
+        return instance;
+    }
+}
+Both eager initialization and static block initialization creates the instance even before it’s being used and that is not the best practice to use. So in further sections, we will learn how to create a Singleton class that supports lazy initialization.
+
+Read: Java static
+
+Lazy Initialization
+Lazy initialization method to implement Singleton pattern creates the instance in the global access method. Here is the sample code for creating Singleton class with this approach.
+
+package com.journaldev.singleton;
+
+public class LazyInitializedSingleton {
+
+    private static LazyInitializedSingleton instance;
+    
+    private LazyInitializedSingleton(){}
+    
+    public static LazyInitializedSingleton getInstance(){
+        if(instance == null){
+            instance = new LazyInitializedSingleton();
+        }
+        return instance;
+    }
+}
+The above implementation works fine in case of the single-threaded environment but when it comes to multithreaded systems, it can cause issues if multiple threads are inside the if condition at the same time. It will destroy the singleton pattern and both threads will get the different instances of the singleton class. In next section, we will see different ways to create a thread-safe singleton class.
+
+Thread Safe Singleton
+The easier way to create a thread-safe singleton class is to make the global access method synchronized, so that only one thread can execute this method at a time. General implementation of this approach is like the below class.
+
+package com.journaldev.singleton;
+
+public class ThreadSafeSingleton {
+
+    private static ThreadSafeSingleton instance;
+    
+    private ThreadSafeSingleton(){}
+    
+    public static synchronized ThreadSafeSingleton getInstance(){
+        if(instance == null){
+            instance = new ThreadSafeSingleton();
+        }
+        return instance;
+    }
+}
+Above implementation works fine and provides thread-safety but it reduces the performance because of the cost associated with the synchronized method, although we need it only for the first few threads who might create the separate instances (Read: Java Synchronization). To avoid this extra overhead every time, double checked locking principle is used. In this approach, the synchronized block is used inside the if condition with an additional check to ensure that only one instance of a singleton class is created.
+
+Below code snippet provides the double-checked locking implementation.
+
+
+public static ThreadSafeSingleton getInstanceUsingDoubleLocking(){
+    if(instance == null){
+        synchronized (ThreadSafeSingleton.class) {
+            if(instance == null){
+                instance = new ThreadSafeSingleton();
+            }
+        }
+    }
+    return instance;
+}
+Read: Thread Safe Singleton Class
+
+Bill Pugh Singleton Implementation
+Prior to Java 5, java memory model had a lot of issues and the above approaches used to fail in certain scenarios where too many threads try to get the instance of the Singleton class simultaneously. So Bill Pugh came up with a different approach to create the Singleton class using an inner static helper class. The Bill Pugh Singleton implementation goes like this;
+
+package com.journaldev.singleton;
+
+public class BillPughSingleton {
+
+    private BillPughSingleton(){}
+    
+    private static class SingletonHelper{
+        private static final BillPughSingleton INSTANCE = new BillPughSingleton();
+    }
+    
+    public static BillPughSingleton getInstance(){
+        return SingletonHelper.INSTANCE;
+    }
+}
+Notice the private inner static class that contains the instance of the singleton class. When the singleton class is loaded, SingletonHelper class is not loaded into memory and only when someone calls the getInstance method, this class gets loaded and creates the Singleton class instance.
+
+This is the most widely used approach for Singleton class as it doesn’t require synchronization. I am using this approach in many of my projects and it’s easy to understand and implement also.
+
+Read: Java Nested Classes
+
+Using Reflection to destroy Singleton Pattern
+Reflection can be used to destroy all the above singleton implementation approaches. Let’s see this with an example class.
+
+package com.journaldev.singleton;
+
+import java.lang.reflect.Constructor;
+
+public class ReflectionSingletonTest {
+
+    public static void main(String[] args) {
+        EagerInitializedSingleton instanceOne = EagerInitializedSingleton.getInstance();
+        EagerInitializedSingleton instanceTwo = null;
+        try {
+            Constructor[] constructors = EagerInitializedSingleton.class.getDeclaredConstructors();
+            for (Constructor constructor : constructors) {
+                //Below code will destroy the singleton pattern
+                constructor.setAccessible(true);
+                instanceTwo = (EagerInitializedSingleton) constructor.newInstance();
+                break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println(instanceOne.hashCode());
+        System.out.println(instanceTwo.hashCode());
+    }
+}
+When you run the above test class, you will notice that hashCode of both the instances is not same that destroys the singleton pattern. Reflection is very powerful and used in a lot of frameworks like Spring and Hibernate, do check out Java Reflection Tutorial.
+
+Enum Singleton
+To overcome this situation with Reflection, Joshua Bloch suggests the use of Enum to implement Singleton design pattern as Java ensures that any enum value is instantiated only once in a Java program. Since Java Enum values are globally accessible, so is the singleton. The drawback is that the enum type is somewhat inflexible; for example, it does not allow lazy initialization.
+
+package com.journaldev.singleton;
+
+public enum EnumSingleton {
+
+    INSTANCE;
+    
+    public static void doSomething(){
+        //do something
+    }
+}
+Read: Java Enum
+
+Serialization and Singleton
+Sometimes in distributed systems, we need to implement Serializable interface in Singleton class so that we can store its state in the file system and retrieve it at a later point of time. Here is a small singleton class that implements Serializable interface also.
+
+package com.journaldev.singleton;
+
+import java.io.Serializable;
+
+public class SerializedSingleton implements Serializable{
+
+    private static final long serialVersionUID = -7604766932017737115L;
+
+    private SerializedSingleton(){}
+    
+    private static class SingletonHelper{
+        private static final SerializedSingleton instance = new SerializedSingleton();
+    }
+    
+    public static SerializedSingleton getInstance(){
+        return SingletonHelper.instance;
+    }
+}
+The problem with serialized singleton class is that whenever we deserialize it, it will create a new instance of the class. Let’s see it with a simple program.
+
+package com.journaldev.singleton;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+
+public class SingletonSerializedTest {
+
+    public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException {
+        SerializedSingleton instanceOne = SerializedSingleton.getInstance();
+        ObjectOutput out = new ObjectOutputStream(new FileOutputStream(
+                "filename.ser"));
+        out.writeObject(instanceOne);
+        out.close();
+        
+        //deserailize from file to object
+        ObjectInput in = new ObjectInputStream(new FileInputStream(
+                "filename.ser"));
+        SerializedSingleton instanceTwo = (SerializedSingleton) in.readObject();
+        in.close();
+        
+        System.out.println("instanceOne hashCode="+instanceOne.hashCode());
+        System.out.println("instanceTwo hashCode="+instanceTwo.hashCode());
+        
+    }
+
+}
+The output of the above program is;
+
+instanceOne hashCode=2011117821
+instanceTwo hashCode=109647522
+So it destroys the singleton pattern, to overcome this scenario all we need to do it provide the implementation of readResolve() method.
+
+protected Object readResolve() {
+    return getInstance();
+}
+After this, you will notice that hashCode of both the instances is same in the test program.
+
+Factory Pattern
+Factory design pattern is used when we have a super class with multiple sub-classes and based on input, we need to return one of the sub-class. This pattern take out the responsibility of instantiation of a class from client program to the factory class. We can apply Singleton pattern on Factory class or make the factory method static. Check out Factory Design Pattern for example program and factory pattern benefits. This is one of the most widely used java design pattern.
+
+Welcome to the Factory Design Pattern in Java tutorial. Factory Pattern is one of the Creational Design pattern and it’s widely used in JDK as well as frameworks like Spring and Struts.
+Factory design pattern is used when we have a super class with multiple sub-classes and based on input, we need to return one of the sub-class. This pattern take out the responsibility of instantiation of a class from client program to the factory class.
+Let’s first learn how to implement factory design pattern in java and then we will look into factory pattern advantages. We will see some of factory design pattern usage in JDK. Note that this pattern is also known as Factory Method Design Pattern.
+
+Factory Design Pattern Super Class
+Super class in factory design pattern can be an interface, abstract class or a normal java class. For our factory design pattern example, we have abstract super class with overridden toString() method for testing purpose.
+
+package com.journaldev.design.model;
+public abstract class Computer {
+	
+	public abstract String getRAM();
+	public abstract String getHDD();
+	public abstract String getCPU();
+	
+	@Override
+	public String toString(){
+		return "RAM= "+this.getRAM()+", HDD="+this.getHDD()+", CPU="+this.getCPU();
+	}
+}
+Factory Design Pattern Sub Classes
+Let’s say we have two sub-classes PC and Server with below implementation.
+
+package com.journaldev.design.model;
+public class PC extends Computer {
+
+	private String ram;
+	private String hdd;
+	private String cpu;
+	
+	public PC(String ram, String hdd, String cpu){
+		this.ram=ram;
+		this.hdd=hdd;
+		this.cpu=cpu;
+	}
+	@Override
+	public String getRAM() {
+		return this.ram;
+	}
+
+	@Override
+	public String getHDD() {
+		return this.hdd;
+	}
+
+	@Override
+	public String getCPU() {
+		return this.cpu;
+	}
+}
+Notice that both the classes are extending Computer super class.
+
+package com.journaldev.design.model;
+public class Server extends Computer {
+
+	private String ram;
+	private String hdd;
+	private String cpu;
+	
+	public Server(String ram, String hdd, String cpu){
+		this.ram=ram;
+		this.hdd=hdd;
+		this.cpu=cpu;
+	}
+	@Override
+	public String getRAM() {
+		return this.ram;
+	}
+
+	@Override
+	public String getHDD() {
+		return this.hdd;
+	}
+
+	@Override
+	public String getCPU() {
+		return this.cpu;
+	}
+
+}
+Factory Class
+Now that we have super classes and sub-classes ready, we can write our factory class. Here is the basic implementation.
+
+package com.journaldev.design.factory;
+import com.journaldev.design.model.Computer;
+import com.journaldev.design.model.PC;
+import com.journaldev.design.model.Server;
+
+public class ComputerFactory {
+
+	public static Computer getComputer(String type, String ram, String hdd, String cpu){
+		if("PC".equalsIgnoreCase(type)) return new PC(ram, hdd, cpu);
+		else if("Server".equalsIgnoreCase(type)) return new Server(ram, hdd, cpu);
+		
+		return null;
+	}
+}
+Some important points about Factory Design Pattern method are;
+
+We can keep Factory class Singleton or we can keep the method that returns the subclass as static.
+Notice that based on the input parameter, different subclass is created and returned. getComputer is the factory method.
+factory pattern java, factory pattern, factory design pattern, factory pattern class diagram
+Here is a simple test client program that uses above factory design pattern implementation.
+
+package com.journaldev.design.test;
+import com.journaldev.design.factory.ComputerFactory;
+import com.journaldev.design.model.Computer;
+
+public class TestFactory {
+
+	public static void main(String[] args) {
+		Computer pc = ComputerFactory.getComputer("pc","2 GB","500 GB","2.4 GHz");
+		Computer server = ComputerFactory.getComputer("server","16 GB","1 TB","2.9 GHz");
+		System.out.println("Factory PC Config::"+pc);
+		System.out.println("Factory Server Config::"+server);
+	}
+
+}
+Output of above program is:
+
+Factory PC Config::RAM= 2 GB, HDD=500 GB, CPU=2.4 GHz
+Factory Server Config::RAM= 16 GB, HDD=1 TB, CPU=2.9 GHz
+Factory Design Pattern Advantages
+Factory design pattern provides approach to code for interface rather than implementation.
+Factory pattern removes the instantiation of actual implementation classes from client code. Factory pattern makes our code more robust, less coupled and easy to extend. For example, we can easily change PC class implementation because client program is unaware of this.
+Factory pattern provides abstraction between implementation and client classes through inheritance.
+Factory Design Pattern Examples in JDK
+java.util.Calendar, ResourceBundle and NumberFormat getInstance() methods uses Factory pattern.
+valueOf() method in wrapper classes like Boolean, Integer etc.
+
+Abstract Factory Pattern
+Abstract Factory pattern is similar to Factory pattern and it’s factory of factories. If you are familiar with factory design pattern in java, you will notice that we have a single Factory class that returns the different sub-classes based on the input provided and factory class uses if-else or switch statement to achieve this.
+In Abstract Factory pattern, we get rid of if-else block and have a factory class for each sub-class and then an Abstract Factory class that will return the sub-class based on the input factory class. Check out Abstract Factory Pattern to know how to implement this pattern with example program.
+
+Abstract Factory Design Pattern in Java
+PANKAJ 30 COMMENTS
+
+
+Welcome to Abstract Factory Design Pattern in java example. Abstract Factory design pattern is one of the Creational patterns. Abstract Factory pattern is almost similar to Factory Pattern except the fact that its more like factory of factories.
+
+Table of Contents [hide]
+
+1 Abstract Factory
+1.1 Abstract Factory Design Pattern Super Class and Subclasses
+1.2 Factory Class for Each subclass
+1.3 Abstract Factory Design Pattern Benefits
+1.4 Abstract Factory Design Pattern Examples in JDK
+1.5 Abstract Factory Design Pattern Video Tutorial
+Abstract Factory
+abstract factory, abstract factory design pattern, abstract factory pattern
+
+If you are familiar with factory design pattern in java, you will notice that we have a single Factory class. This factory class returns different subclasses based on the input provided and factory class uses if-else or switch statement to achieve this.
+
+In the Abstract Factory pattern, we get rid of if-else block and have a factory class for each sub-class. Then an Abstract Factory class that will return the sub-class based on the input factory class. At first, it seems confusing but once you see the implementation, it’s really easy to grasp and understand the minor difference between Factory and Abstract Factory pattern.
+
+Like our factory pattern post, we will use the same superclass and sub-classes.
+
+Abstract Factory Design Pattern Super Class and Subclasses
+Computer.java
+
+
+
+package com.journaldev.design.model;
+ 
+public abstract class Computer {
+     
+    public abstract String getRAM();
+    public abstract String getHDD();
+    public abstract String getCPU();
+     
+    @Override
+    public String toString(){
+        return "RAM= "+this.getRAM()+", HDD="+this.getHDD()+", CPU="+this.getCPU();
+    }
+}
+PC.java
+
+
+package com.journaldev.design.model;
+ 
+public class PC extends Computer {
+ 
+    private String ram;
+    private String hdd;
+    private String cpu;
+     
+    public PC(String ram, String hdd, String cpu){
+        this.ram=ram;
+        this.hdd=hdd;
+        this.cpu=cpu;
+    }
+    @Override
+    public String getRAM() {
+        return this.ram;
+    }
+ 
+    @Override
+    public String getHDD() {
+        return this.hdd;
+    }
+ 
+    @Override
+    public String getCPU() {
+        return this.cpu;
+    }
+ 
+}
+Server.java
+
+
+package com.journaldev.design.model;
+ 
+ 
+public class Server extends Computer {
+ 
+    private String ram;
+    private String hdd;
+    private String cpu;
+     
+    public Server(String ram, String hdd, String cpu){
+        this.ram=ram;
+        this.hdd=hdd;
+        this.cpu=cpu;
+    }
+    @Override
+    public String getRAM() {
+        return this.ram;
+    }
+ 
+    @Override
+    public String getHDD() {
+        return this.hdd;
+    }
+ 
+    @Override
+    public String getCPU() {
+        return this.cpu;
+    }
+ 
+}
+Factory Class for Each subclass
+First of all we need to create a Abstract Factory interface or abstract class.
+
+ComputerAbstractFactory.java
+
+
+package com.journaldev.design.abstractfactory;
+
+import com.journaldev.design.model.Computer;
+
+public interface ComputerAbstractFactory {
+
+	public Computer createComputer();
+
+}
+Notice that createComputer() method is returning an instance of super class Computer. Now our factory classes will implement this interface and return their respective sub-class.
+
+PCFactory.java
+
+
+package com.journaldev.design.abstractfactory;
+
+import com.journaldev.design.model.Computer;
+import com.journaldev.design.model.PC;
+
+public class PCFactory implements ComputerAbstractFactory {
+
+	private String ram;
+	private String hdd;
+	private String cpu;
+	
+	public PCFactory(String ram, String hdd, String cpu){
+		this.ram=ram;
+		this.hdd=hdd;
+		this.cpu=cpu;
+	}
+	@Override
+	public Computer createComputer() {
+		return new PC(ram,hdd,cpu);
+	}
+
+}
+Similarly we will have a factory class for Server subclass.
+
+
+ServerFactory.java
+
+
+package com.journaldev.design.abstractfactory;
+
+import com.journaldev.design.model.Computer;
+import com.journaldev.design.model.Server;
+
+public class ServerFactory implements ComputerAbstractFactory {
+
+	private String ram;
+	private String hdd;
+	private String cpu;
+	
+	public ServerFactory(String ram, String hdd, String cpu){
+		this.ram=ram;
+		this.hdd=hdd;
+		this.cpu=cpu;
+	}
+	
+	@Override
+	public Computer createComputer() {
+		return new Server(ram,hdd,cpu);
+	}
+
+}
+Now we will create a consumer class that will provide the entry point for the client classes to create sub-classes.
+
+ComputerFactory.java
+
+
+package com.journaldev.design.abstractfactory;
+
+import com.journaldev.design.model.Computer;
+
+public class ComputerFactory {
+
+	public static Computer getComputer(ComputerAbstractFactory factory){
+		return factory.createComputer();
+	}
+}
+Notice that its a simple class and getComputer method is accepting ComputerAbstractFactory argument and returning Computer object. At this point the implementation must be getting clear.
+
+Let’s write a simple test method and see how to use the abstract factory to get the instance of sub-classes.
+
+TestDesignPatterns.java
+
+
+package com.journaldev.design.test;
+
+import com.journaldev.design.abstractfactory.PCFactory;
+import com.journaldev.design.abstractfactory.ServerFactory;
+import com.journaldev.design.factory.ComputerFactory;
+import com.journaldev.design.model.Computer;
+
+public class TestDesignPatterns {
+
+	public static void main(String[] args) {
+		testAbstractFactory();
+	}
+
+	private static void testAbstractFactory() {
+		Computer pc = com.journaldev.design.abstractfactory.ComputerFactory.getComputer(new PCFactory("2 GB","500 GB","2.4 GHz"));
+		Computer server = com.journaldev.design.abstractfactory.ComputerFactory.getComputer(new ServerFactory("16 GB","1 TB","2.9 GHz"));
+		System.out.println("AbstractFactory PC Config::"+pc);
+		System.out.println("AbstractFactory Server Config::"+server);
+	}
+}
+Output of the above program will be:
+
+
+AbstractFactory PC Config::RAM= 2 GB, HDD=500 GB, CPU=2.4 GHz
+AbstractFactory Server Config::RAM= 16 GB, HDD=1 TB, CPU=2.9 GHz
+Here is the class diagram of abstract factory design pattern implementation.
+
+Abstract Factory Pattern
+
+Abstract Factory Design Pattern Benefits
+Abstract Factory design pattern provides approach to code for interface rather than implementation.
+Abstract Factory pattern is “factory of factories” and can be easily extended to accommodate more products, for example we can add another sub-class Laptop and a factory LaptopFactory.
+Abstract Factory pattern is robust and avoid conditional logic of Factory pattern.
+Abstract Factory Design Pattern Examples in JDK
+javax.xml.parsers.DocumentBuilderFactory#newInstance()
+javax.xml.transform.TransformerFactory#newInstance()
+javax.xml.xpath.XPathFactory#newInstance()
+
+Prototype Pattern
+Prototype pattern is used when the Object creation is a costly affair and requires a lot of time and resources and you have a similar object already existing. So this pattern provides a mechanism to copy the original object to a new object and then modify it according to our needs. This pattern uses java cloning to copy the object.
+Prototype design pattern mandates that the Object which you are copying should provide the copying feature. It should not be done by any other class. However whether to use shallow or deep copy of the Object properties depends on the requirements and it’s a design decision. Check out Prototype Pattern for sample program.
+
+Prototype design pattern is one of the Creational Design pattern, so it provides a mechanism of object creation.
+Prototype design pattern is used when the Object creation is a costly affair and requires a lot of time and resources and you have a similar object already existing.
+Prototype pattern provides a mechanism to copy the original object to a new object and then modify it according to our needs. Prototype design pattern uses java cloning to copy the object.
+
+Prototype Design Pattern Example
+It would be easy to understand prototype design pattern with an example. Suppose we have an Object that loads data from database. Now we need to modify this data in our program multiple times, so it’s not a good idea to create the Object using new keyword and load all the data again from database.
+The better approach would be to clone the existing object into a new object and then do the data manipulation.
+
+*Prototype design pattern mandates that the Object which you are copying should provide the copying feature. It should not be done by any other class. However whether to use shallow or deep copy of the Object properties depends on the requirements and its a design decision.*
+
+Employees.java
+package com.journaldev.design.prototype;
+import java.util.ArrayList;
+import java.util.List;
+public class Employees implements Cloneable{
+
+	private List<String> empList;
+	
+	public Employees(){
+		empList = new ArrayList<String>();
+	}
+	
+	public Employees(List<String> list){
+		this.empList=list;
+	}
+	public void loadData(){
+		//read all employees from database and put into the list
+		empList.add("Pankaj");
+		empList.add("Raj");
+		empList.add("David");
+		empList.add("Lisa");
+	}
+	
+	public List<String> getEmpList() {
+		return empList;
+	}
+
+	@Override
+	public Object clone() throws CloneNotSupportedException{
+			List<String> temp = new ArrayList<String>();
+			for(String s : this.getEmpList()){
+				temp.add(s);
+			}
+			return new Employees(temp);
+	}
+}
+Notice that the clone method is overridden to provide a deep copy of the employees list.
+Here is the prototype design pattern example test program that will show the benefit of prototype pattern.
+
+PrototypePatternTest.java
+package com.journaldev.design.test;
+import java.util.List;
+import com.journaldev.design.prototype.Employees;
+public class PrototypePatternTest {
+
+	public static void main(String[] args) throws CloneNotSupportedException {
+		Employees emps = new Employees();
+		emps.loadData();
+		
+		//Use the clone method to get the Employee object
+		Employees empsNew = (Employees) emps.clone();
+		Employees empsNew1 = (Employees) emps.clone();
+		List<String> list = empsNew.getEmpList();
+		list.add("John");
+		List<String> list1 = empsNew1.getEmpList();
+		list1.remove("Pankaj");
+		
+		System.out.println("emps List: "+emps.getEmpList());
+		System.out.println("empsNew List: "+list);
+		System.out.println("empsNew1 List: "+list1);
+	}
+}
+Output of the above prototype design pattern example program is:
+
+emps List: [Pankaj, Raj, David, Lisa]
+empsNew List: [Pankaj, Raj, David, Lisa, John]
+empsNew1 List: [Raj, David, Lisa]
+If the object cloning was not provided, we will have to make database call to fetch the employee list every time. Then do the manipulations that would have been resource and time consuming.
+
+Builder Pattern
+This pattern was introduced to solve some of the problems with Factory and Abstract Factory design patterns when the Object contains a lot of attributes. Builder pattern solves the issue with large number of optional parameters and inconsistent state by providing a way to build the object step-by-step and provide a method that will actually return the final Object. Check out Builder Pattern for example program and classes used in JDK.
+
+
+Builder Design Pattern
+builder pattern in java, builder design pattern, builder pattern
+
+Builder pattern was introduced to solve some of the problems with Factory and Abstract Factory design patterns when the Object contains a lot of attributes.
+
+There are three major issues with Factory and Abstract Factory design patterns when the Object contains a lot of attributes.
+
+Too Many arguments to pass from client program to the Factory class that can be error prone because most of the time, the type of arguments are same and from client side its hard to maintain the order of the argument.
+Some of the parameters might be optional but in Factory pattern, we are forced to send all the parameters and optional parameters need to send as NULL.
+If the object is heavy and its creation is complex, then all that complexity will be part of Factory classes that is confusing.
+We can solve the issues with large number of parameters by providing a constructor with required parameters and then different setter methods to set the optional parameters. The problem with this approach is that the Object state will be inconsistent until unless all the attributes are set explicitly.
+
+Builder pattern solves the issue with large number of optional parameters and inconsistent state by providing a way to build the object step-by-step and provide a method that will actually return the final Object.
+
+Builder Design Pattern in Java
+Let’s see how we can implement builder design pattern in java.
+
+First of all you need to create a static nested class and then copy all the arguments from the outer class to the Builder class. We should follow the naming convention and if the class name is Computer then builder class should be named as ComputerBuilder.
+Java Builder class should have a public constructor with all the required attributes as parameters.
+Java Builder class should have methods to set the optional parameters and it should return the same Builder object after setting the optional attribute.
+The final step is to provide a build() method in the builder class that will return the Object needed by client program. For this we need to have a private constructor in the Class with Builder class as argument.
+Here is the sample builder pattern example code where we have a Computer class and ComputerBuilder class to build it.
+
+1.
+package com.journaldev.design.builder;
+
+public class Computer {
+	
+	//required parameters
+	private String HDD;
+	private String RAM;
+	
+	//optional parameters
+	private boolean isGraphicsCardEnabled;
+	private boolean isBluetoothEnabled;
+	
+
+	public String getHDD() {
+		return HDD;
+	}
+
+	public String getRAM() {
+		return RAM;
+	}
+
+	public boolean isGraphicsCardEnabled() {
+		return isGraphicsCardEnabled;
+	}
+
+	public boolean isBluetoothEnabled() {
+		return isBluetoothEnabled;
+	}
+	
+	private Computer(ComputerBuilder builder) {
+		this.HDD=builder.HDD;
+		this.RAM=builder.RAM;
+		this.isGraphicsCardEnabled=builder.isGraphicsCardEnabled;
+		this.isBluetoothEnabled=builder.isBluetoothEnabled;
+	}
+	
+	//Builder Class
+	public static class ComputerBuilder{
+
+		// required parameters
+		private String HDD;
+		private String RAM;
+
+		// optional parameters
+		private boolean isGraphicsCardEnabled;
+		private boolean isBluetoothEnabled;
+		
+		public ComputerBuilder(String hdd, String ram){
+			this.HDD=hdd;
+			this.RAM=ram;
+		}
+
+		public ComputerBuilder setGraphicsCardEnabled(boolean isGraphicsCardEnabled) {
+			this.isGraphicsCardEnabled = isGraphicsCardEnabled;
+			return this;
+		}
+
+		public ComputerBuilder setBluetoothEnabled(boolean isBluetoothEnabled) {
+			this.isBluetoothEnabled = isBluetoothEnabled;
+			return this;
+		}
+		
+		public Computer build(){
+			return new Computer(this);
+		}
+
+	}
+
+}
+Notice that Computer class has only getter methods and no public constructor. So the only way to get a Computer object is through the ComputerBuilder class.
+
+Here is a builder pattern example test program showing how to use Builder class to get the object.
+
+Copy
+package com.journaldev.design.test;
+
+import com.journaldev.design.builder.Computer;
+
+public class TestBuilderPattern {
+
+	public static void main(String[] args) {
+		//Using builder to get the object in a single line of code and 
+                //without any inconsistent state or arguments management issues		
+		Computer comp = new Computer.ComputerBuilder(
+				"500 GB", "2 GB").setBluetoothEnabled(true)
+				.setGraphicsCardEnabled(true).build();
+	}
+
+}
+
+2.
+package com.activemesa.creational.builder.facets;
+
+class Person
+{
+  // address
+  public String streetAddress, postcode, city;
+
+  // employment
+  public String companyName, position;
+  public int annualIncome;
+
+  @Override
+  public String toString()
+  {
+    return "Person{" +
+      "streetAddress='" + streetAddress + '\'' +
+      ", postcode='" + postcode + '\'' +
+      ", city='" + city + '\'' +
+      ", companyName='" + companyName + '\'' +
+      ", position='" + position + '\'' +
+      ", annualIncome=" + annualIncome +
+      '}';
+  }
+}
+
+// builder facade
+class PersonBuilder
+{
+  // the object we're going to build
+  protected Person person = new Person(); // reference!
+
+  public PersonJobBuilder works()
+  {
+    return new PersonJobBuilder(person);
+  }
+
+  public PersonAddressBuilder lives()
+  {
+    return new PersonAddressBuilder(person);
+  }
+
+  public Person build()
+  {
+    return person;
+  }
+}
+
+class PersonAddressBuilder extends PersonBuilder
+{
+  public PersonAddressBuilder(Person person)
+  {
+    this.person = person;
+  }
+
+  public PersonAddressBuilder at(String streetAddress)
+  {
+    person.streetAddress = streetAddress;
+    return this;
+  }
+
+  public PersonAddressBuilder withPostcode(String postcode)
+  {
+    person.postcode = postcode;
+    return this;
+  }
+
+  public PersonAddressBuilder in(String city)
+  {
+    person.city = city;
+    return this;
+  }
+}
+
+class PersonJobBuilder extends PersonBuilder
+{
+  public PersonJobBuilder(Person person)
+  {
+    this.person = person;
+  }
+
+  public PersonJobBuilder at(String companyName)
+  {
+    person.companyName = companyName;
+    return this;
+  }
+
+  public PersonJobBuilder asA(String position)
+  {
+    person.position = position;
+    return this;
+  }
+
+  public PersonJobBuilder earning(int annualIncome)
+  {
+    person.annualIncome = annualIncome;
+    return this;
+  }
+}
+
+class BuilderFacetsDemo
+{
+  public static void main(String[] args)
+  {
+    PersonBuilder pb = new PersonBuilder();
+    Person person = pb
+      .lives()
+        .at("123 London Road")
+        .in("London")
+        .withPostcode("SW12BC")
+      .works()
+        .at("Fabrikam")
+        .asA("Engineer")
+        .earning(123000)
+      .build();
+    System.out.println(person);
+  }
+}
+
+Structural Design Patterns
+Structural patterns provide different ways to create a class structure, for example using inheritance and composition to create a large object from small objects.
+
+Adapter Pattern
+Adapter design pattern is one of the structural design pattern and it’s used so that two unrelated interfaces can work together. The object that joins these unrelated interface is called an Adapter. As a real life example, we can think of a mobile charger as an adapter because mobile battery needs 3 volts to charge but the normal socket produces either 120V (US) or 240V (India). So the mobile charger works as an adapter between mobile charging socket and the wall socket. Check out Adapter Pattern for example program and it’s usage in Java.
+
+
+Composite Pattern
+Composite pattern is one of the Structural design pattern and is used when we have to represent a part-whole hierarchy. When we need to create a structure in a way that the objects in the structure has to be treated the same way, we can apply composite design pattern.
+
+Lets understand it with a real life example – A diagram is a structure that consists of Objects such as Circle, Lines, Triangle etc and when we fill the drawing with color (say Red), the same color also gets applied to the Objects in the drawing. Here drawing is made up of different parts and they all have same operations. Check out Composite Pattern article for different component of composite pattern and example program.
+
+
+Proxy Pattern
+Proxy pattern intent is to “Provide a surrogate or placeholder for another object to control access to it”. The definition itself is very clear and proxy pattern is used when we want to provide controlled access of a functionality.
+
+Let’s say we have a class that can run some command on the system. Now if we are using it, it’s fine but if we want to give this program to a client application, it can have severe issues because client program can issue command to delete some system files or change some settings that you don’t want. Check out Proxy Pattern post for the example program with implementation details.
+
+
+Flyweight Pattern
+Flyweight design pattern is used when we need to create a lot of Objects of a class. Since every object consumes memory space that can be crucial for low memory devices, such as mobile devices or embedded systems, flyweight design pattern can be applied to reduce the load on memory by sharing objects. String Pool implementation in java is one of the best example of Flyweight pattern implementation. Check out Flyweight Pattern article for sample program and implementation process.
+
+
+Facade Pattern
+Facade Pattern is used to help client applications to easily interact with the system. Suppose we have an application with set of interfaces to use MySql/Oracle database and to generate different types of reports, such as HTML report, PDF report etc. So we will have different set of interfaces to work with different types of database. Now a client application can use these interfaces to get the required database connection and generate reports. But when the complexity increases or the interface behavior names are confusing, client application will find it difficult to manage it. So we can apply Facade pattern here and provide a wrapper interface on top of the existing interface to help client application. Check out Facade Pattern post for implementation details and sample program.
+
+
+
+Bridge Pattern
+When we have interface hierarchies in both interfaces as well as implementations, then bridge design pattern is used to decouple the interfaces from implementation and hiding the implementation details from the client programs. Like Adapter pattern, it’s one of the Structural design pattern.
+
+The implementation of bridge design pattern follows the notion to prefer Composition over inheritance. Check out Bridge Pattern post for implementation details and sample program.
+
+
+Decorator Pattern
+Decorator design pattern is used to modify the functionality of an object at runtime. At the same time other instances of the same class will not be affected by this, so individual object gets the modified behavior. Decorator design pattern is one of the structural design pattern (such as Adapter Pattern, Bridge Pattern, Composite Pattern) and uses abstract classes or interface with composition to implement.
+
+We use inheritance or composition to extend the behavior of an object but this is done at compile time and it’s applicable to all the instances of the class. We can’t add any new functionality of remove any existing behavior at runtime – this is when Decorator pattern comes into picture. Check out Decorator Pattern post for sample program and implementation details.
+
+
+Behavioral Design Patterns
+Behavioral patterns provide solution for the better interaction between objects and how to provide lose coupling and flexibility to extend easily.
+
+Template Method Pattern
+Template Method is a behavioral design pattern and it’s used to create a method stub and deferring some of the steps of implementation to the subclasses. Template method defines the steps to execute an algorithm and it can provide default implementation that might be common for all or some of the subclasses.
+
+Suppose we want to provide an algorithm to build a house. The steps need to be performed to build a house are – building foundation, building pillars, building walls and windows. The important point is that the we can’t change the order of execution because we can’t build windows before building the foundation. So in this case we can create a template method that will use different methods to build the house. Check out Template Method Pattern post for implementation details with example program.
+
+
+Mediator Pattern
+Mediator design pattern is used to provide a centralized communication medium between different objects in a system. Mediator design pattern is very helpful in an enterprise application where multiple objects are interacting with each other. If the objects interact with each other directly, the system components are tightly-coupled with each other that makes maintainability cost higher and not flexible to extend easily. Mediator pattern focuses on provide a mediator between objects for communication and help in implementing lose-coupling between objects.
+
+Air traffic controller is a great example of mediator pattern where the airport control room works as a mediator for communication between different flights. Mediator works as a router between objects and it can have it’s own logic to provide way of communication. Check out Mediator Pattern post for implementation details with example program.
+
+
+Chain of Responsibility Pattern
+Chain of responsibility pattern is used to achieve lose coupling in software design where a request from client is passed to a chain of objects to process them. Then the object in the chain will decide themselves who will be processing the request and whether the request is required to be sent to the next object in the chain or not.
+
+We know that we can have multiple catch blocks in a try-catch block code. Here every catch block is kind of a processor to process that particular exception. So when any exception occurs in the try block, it’s sent to the first catch block to process. If the catch block is not able to process it, it forwards the request to next object in chain i.e next catch block. If even the last catch block is not able to process it, the exception is thrown outside of the chain to the calling program.
+
+ATM dispense machine logic can be implemented using Chain of Responsibility Pattern, check out the linked post.
+
+
+Observer Pattern
+Observer design pattern is useful when you are interested in the state of an object and want to get notified whenever there is any change. In observer pattern, the object that watch on the state of another object are called Observer and the object that is being watched is called Subject.
+
+Java provides inbuilt platform for implementing Observer pattern through java.util.Observable class and java.util.Observer interface. However it’s not widely used because the implementation is really simple and most of the times we don’t want to end up extending a class just for implementing Observer pattern as java doesn’t provide multiple inheritance in classes.
+
+Java Message Service (JMS) uses Observer pattern along with Mediator pattern to allow applications to subscribe and publish data to other applications. Check out Observer Pattern post for implementation details and example program.
+
+
+Strategy Pattern
+Strategy pattern is used when we have multiple algorithm for a specific task and client decides the actual implementation to be used at runtime.
+
+Strategy pattern is also known as Policy Pattern. We defines multiple algorithms and let client application pass the algorithm to be used as a parameter. One of the best example of this pattern is Collections.sort() method that takes Comparator parameter. Based on the different implementations of Comparator interfaces, the Objects are getting sorted in different ways.
+
+Check out Strategy Pattern post for implementation details and example program.
+
+
+Command Pattern
+Command Pattern is used to implement lose coupling in a request-response model. In command pattern, the request is send to the invoker and invoker pass it to the encapsulated command object. Command object passes the request to the appropriate method of Receiver to perform the specific action.
+
+Let’s say we want to provide a File System utility with methods to open, write and close file and it should support multiple operating systems such as Windows and Unix.
+
+To implement our File System utility, first of all we need to create the receiver classes that will actually do all the work. Since we code in terms of java interfaces, we can have FileSystemReceiver interface and it’s implementation classes for different operating system flavors such as Windows, Unix, Solaris etc. Check out Command Pattern post for the implementation details with example program.
+
+
+State Pattern
+State design pattern is used when an Object change it’s behavior based on it’s internal state.
+
+If we have to change the behavior of an object based on it’s state, we can have a state variable in the Object and use if-else condition block to perform different actions based on the state. State pattern is used to provide a systematic and lose-coupled way to achieve this through Context and State implementations.
+
+Check out State Pattern post for implementation details with example program.
+
+
+Visitor Pattern
+Visitor pattern is used when we have to perform an operation on a group of similar kind of Objects. With the help of visitor pattern, we can move the operational logic from the objects to another class.
+
+For example, think of a Shopping cart where we can add different type of items (Elements), when we click on checkout button, it calculates the total amount to be paid. Now we can have the calculation logic in item classes or we can move out this logic to another class using visitor pattern. Let’s implement this in our example of visitor pattern. Check out Visitor Pattern post for implementation details.
+
+
+Interpreter Pattern
+is used to defines a grammatical representation for a language and provides an interpreter to deal with this grammar.
+
+The best example of this pattern is java compiler that interprets the java source code into byte code that is understandable by JVM. Google Translator is also an example of interpreter pattern where the input can be in any language and we can get the output interpreted in another language.
+
+Check out Interpreter Pattern post for example program.
+
+
+Iterator Pattern
+Iterator pattern in one of the behavioral pattern and it’s used to provide a standard way to traverse through a group of Objects. Iterator pattern is widely used in Java Collection Framework where Iterator interface provides methods for traversing through a collection.
+
+Iterator pattern is not only about traversing through a collection, we can provide different kind of iterators based on our requirements. Iterator pattern hides the actual implementation of traversal through the collection and client programs just use iterator methods. Check out Iterator Pattern post for example program and implementation details.
+
+
+Memento Pattern
+Memento design pattern is used when we want to save the state of an object so that we can restore later on. Memento pattern is used to implement this in such a way that the saved state data of the object is not accessible outside of the object, this protects the integrity of saved state data.
+
+Memento pattern is implemented with two objects – Originator and Caretaker. Originator is the object whose state needs to be saved and restored and it uses an inner class to save the state of Object. The inner class is called Memento and it’s private, so that it can’t be accessed from other objects.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
